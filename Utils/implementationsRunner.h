@@ -3,9 +3,10 @@
 
 #include "../Implementations/loader_template.h"
 #include "../Implementations/naive.h"
-#include "../Implementations/own_fast.h"
+//#include "../Implementations/own_fast.h"
 #include "../Implementations/tiny_obj_loader.h"
 #include "../Implementations/fast_obj.h"
+#include "../Implementations/new_fast.h"
 
 std::vector<LoaderTemplate*>& GetRegistry()
 {
@@ -21,17 +22,20 @@ struct Registrar
 	}
 };
 
-static Naive naiveImplementation;
-static Registrar registerA(&naiveImplementation);
+//static Naive naiveImplementation;
+//static Registrar registerA(&naiveImplementation);
 
-static OwnFast ownFastImplementation;
-static Registrar registerB(&ownFastImplementation);
+//static OwnFast ownFastImplementation;
+//static Registrar registerB(&ownFastImplementation);
 
-static TinyObjLoader tinyObjLoaderImplementation;
-static Registrar registerC(&tinyObjLoaderImplementation);
+//static TinyObjLoader tinyObjLoaderImplementation;
+//static Registrar registerC(&tinyObjLoaderImplementation);
 
 static FastObj fastObjImplementation;
 static Registrar registerD(&fastObjImplementation);
+
+static NewFast newFastImplementation;
+static Registrar registerE(&newFastImplementation);
 
 std::vector<Results> runImplementations(const std::vector<std::string> paths)
 {

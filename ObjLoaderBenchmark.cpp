@@ -6,7 +6,7 @@ const bool deduplicateVertices = false;
 #include "Utils/implementationsRunner.h"
 #include "Utils/resultsDisplayer.h"
 
-const char* objFolderPath = "Objs/";
+const char* objFolderPath = "Objs";
 
 int main()
 {

@@ -102,6 +102,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <Optimization>MaxSpeed</Optimization>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,8 +117,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,11 +131,21 @@
     <ClCompile Include="ObjLoaderBenchmark.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Externals\ascii_number.h" />
+    <ClInclude Include="Externals\bigint.h" />
+    <ClInclude Include="Externals\constexpr_feature_detect.h" />
+    <ClInclude Include="Externals\decimal_to_binary.h" />
+    <ClInclude Include="Externals\digit_comparison.h" />
+    <ClInclude Include="Externals\fast_float.h" />
     <ClInclude Include="Externals\fast_obj.h" />
+    <ClInclude Include="Externals\fast_table.h" />
+    <ClInclude Include="Externals\float_common.h" />
+    <ClInclude Include="Externals\parse_number.h" />
     <ClInclude Include="Externals\tiny_obj_loader.h" />
     <ClInclude Include="Implementations\fast_obj.h" />
     <ClInclude Include="Implementations\loader_template.h" />
     <ClInclude Include="Implementations\naive.h" />
+    <ClInclude Include="Implementations\new_fast.h" />
     <ClInclude Include="Implementations\own_fast.h" />
     <ClInclude Include="Implementations\tiny_obj_loader.h" />
     <ClInclude Include="types.h" />

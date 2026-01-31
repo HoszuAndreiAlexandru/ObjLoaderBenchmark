@@ -212,3 +212,48 @@ struct ImplSummary
     size_t totalIndices;
     std::chrono::milliseconds totalTime;
 };
+
+struct MappedFile {
+    HANDLE file = INVALID_HANDLE_VALUE;
+    HANDLE mapping = nullptr;
+    const char* data = nullptr;
+    size_t size = 0;
+
+    bool open(const std::string& path) {
+        file = CreateFileA(
+            path.c_str(),
+            GENERIC_READ,
+            FILE_SHARE_READ,
+            NULL,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL
+        );
+
+        if (file == INVALID_HANDLE_VALUE)
+            return false;
+
+        LARGE_INTEGER fileSize;
+        if (!GetFileSizeEx(file, &fileSize))
+            return false;
+
+        size = (size_t)fileSize.QuadPart;
+
+        mapping = CreateFileMappingA(file, NULL, PAGE_READONLY, 0, 0, NULL);
+        if (!mapping)
+            return false;
+
+        data = (const char*)MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0);
+        return data != nullptr;
+    }
+
+    void close() {
+        if (data) UnmapViewOfFile(data);
+        if (mapping) CloseHandle(mapping);
+        if (file != INVALID_HANDLE_VALUE) CloseHandle(file);
+    }
+
+    ~MappedFile() {
+        close();
+    }
+};

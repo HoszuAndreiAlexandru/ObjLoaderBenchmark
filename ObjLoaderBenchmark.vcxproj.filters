@@ -65,5 +65,35 @@
     <ClInclude Include="Externals\tiny_obj_loader.h">
       <Filter>Source Files\Externals</Filter>
     </ClInclude>
+    <ClInclude Include="Implementations\new_fast.h">
+      <Filter>Source Files\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\fast_float.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\float_common.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\constexpr_feature_detect.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\parse_number.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\ascii_number.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\decimal_to_binary.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\digit_comparison.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\fast_table.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\bigint.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

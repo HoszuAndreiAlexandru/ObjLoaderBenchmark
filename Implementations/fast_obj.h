@@ -2,10 +2,12 @@
 
 #include "loader_template.h"
 
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
-#endif
+//#endif
+#pragma optimize( "", off )
 #include "../Externals/fast_obj.h"
+#pragma optimize( "", on ) 
 
 #pragma region Helper functions
 
