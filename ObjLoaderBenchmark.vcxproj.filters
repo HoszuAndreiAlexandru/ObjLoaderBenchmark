@@ -13,10 +13,57 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Implementations">
+      <UniqueIdentifier>{3cdcc232-e9cc-4b52-bc1f-d42985cda948}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{20836878-60ae-4c0f-ac02-4ca34b2a7c53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Externals">
+      <UniqueIdentifier>{20214779-2589-4125-8da4-e7c27b9899e1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ObjLoaderBenchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Externals\fast_obj.c">
+      <Filter>Source Files\Externals</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Implementations\fast_obj.h">
+      <Filter>Source Files\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementations\naive.h">
+      <Filter>Source Files\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementations\own_fast.h">
+      <Filter>Source Files\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementations\tiny_obj_loader.h">
+      <Filter>Source Files\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="types.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Implementations\loader_template.h">
+      <Filter>Source Files\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\implementationsRunner.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\objFileScanner.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\resultsDisplayer.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\fast_obj.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="Externals\tiny_obj_loader.h">
+      <Filter>Source Files\Externals</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

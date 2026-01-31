@@ -100,7 +100,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
@@ -123,7 +123,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Externals\fast_obj.c" />
     <ClCompile Include="ObjLoaderBenchmark.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Externals\fast_obj.h" />
+    <ClInclude Include="Externals\tiny_obj_loader.h" />
+    <ClInclude Include="Implementations\fast_obj.h" />
+    <ClInclude Include="Implementations\loader_template.h" />
+    <ClInclude Include="Implementations\naive.h" />
+    <ClInclude Include="Implementations\own_fast.h" />
+    <ClInclude Include="Implementations\tiny_obj_loader.h" />
+    <ClInclude Include="types.h" />
+    <ClInclude Include="Utils\implementationsRunner.h" />
+    <ClInclude Include="Utils\objFileScanner.h" />
+    <ClInclude Include="Utils\resultsDisplayer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
