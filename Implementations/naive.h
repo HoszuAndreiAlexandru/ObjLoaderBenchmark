@@ -1,6 +1,7 @@
 #pragma once
 
 #include "loader_template.h"
+#include "../Utils/triangulation.h"
 
 #pragma region Helper functions
 float _stringToFloat(const std::string& source) {
@@ -54,7 +55,7 @@ class Naive : public  LoaderTemplate
         Mesh loadObjImplementation(const std::string& filename) override
         {
             std::vector<Vertex> vertices;
-            std::vector<unsigned int> indices;
+            std::vector<int> indices;
 
             std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
             if (!file.good())
@@ -65,6 +66,8 @@ class Naive : public  LoaderTemplate
 
             std::string line;
             std::vector<std::string> tokens, facetokens;
+            std::vector<int> faceIndices;
+            faceIndices.reserve(4);
 
             std::vector<vec3> positions;
             positions.reserve(1000);
@@ -114,7 +117,7 @@ class Naive : public  LoaderTemplate
                         }
                     }
 
-                    unsigned int index_of_first_vertex_of_face = std::numeric_limits<unsigned int>::max();
+                    faceIndices.clear();
 
                     for (unsigned int num_token = 1; num_token < tokens.size(); num_token++)
                     {
@@ -170,20 +173,10 @@ class Naive : public  LoaderTemplate
                             vertices.push_back(Vertex(positions[p_index].x, positions[p_index].y, positions[p_index].z, normals[n_index].x, normals[n_index].y, normals[n_index].z, texcoords[t_index].x, texcoords[t_index].y));
                         }
 
-                        if (num_token < 4)
-                        {
-                            if (num_token == 1)
-                                index_of_first_vertex_of_face = vertices.size() - 1;
-
-                            indices.push_back(vertices.size() - 1);
-                        }
-                        else
-                        {
-                            indices.push_back(index_of_first_vertex_of_face);
-                            indices.push_back(vertices.size() - 2);
-                            indices.push_back(vertices.size() - 1);
-                        }
+                        faceIndices.push_back(checkedMeshIndex(vertices.size() - 1));
                     }
+
+                    appendFaceTriangles(faceIndices, vertices, indices);
                 }
             }
 

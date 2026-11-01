@@ -1,8 +1,11 @@
 #pragma once
 
 #include "loader_template.h"
+#include "../Utils/triangulation.h"
 #include "../Externals/fast_float.h"
 
+namespace NewFastHelpers
+{
 #pragma region Helper functions
 static inline int parseInt(const char* s, size_t n)
 {
@@ -148,6 +151,7 @@ struct FastVertexCache {
     }
 };
 #pragma endregion
+}
 
 class NewFast : public  LoaderTemplate
 {
@@ -198,7 +202,7 @@ public:
         size_t size = file.size;
 
         static std::vector<Vertex> vertices;
-        static std::vector<unsigned int> indices;
+        static std::vector<int> indices;
         static std::vector<vec3> positions;
         static std::vector<vec3> normals;
         static std::vector<vec2> texcoords;
@@ -215,7 +219,9 @@ public:
         vertices.reserve(size / 10);
         indices.reserve(size / 5);
 
-        FastVertexCache cache(1 << 20);
+        NewFastHelpers::FastVertexCache cache(1 << 20);
+        std::vector<int> faceIndices;
+        faceIndices.reserve(4);
 
         while (data < end)
         {
@@ -233,15 +239,15 @@ public:
                 const char* p = lineStart + 1;
                 while (*p == ' ' || *p == '\t') ++p;
                 const char* a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                float x = parseFloat(a, p - a);
+                float x = NewFastHelpers::parseFloat(a, p - a);
                 //fast_float::from_chars(a, p, x);
                 while (p < lineEnd && (*p == ' ' || *p == '\t')) ++p;
                 a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                float y = parseFloat(a, p - a);
+                float y = NewFastHelpers::parseFloat(a, p - a);
                 //fast_float::from_chars(a, p, y);
                 while (p < lineEnd && (*p == ' ' || *p == '\t')) ++p;
                 a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                float z = parseFloat(a, p - a);
+                float z = NewFastHelpers::parseFloat(a, p - a);
                 //fast_float::from_chars(a, p, z);
                 positions.emplace_back(x, y, z);
             }
@@ -250,15 +256,15 @@ public:
                 const char* p = lineStart + 2;
                 while (*p == ' ' || *p == '\t') ++p;
                 const char* a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                float x = parseFloat(a, p - a);
+                float x = NewFastHelpers::parseFloat(a, p - a);
                 //fast_float::from_chars(a, p, x);
                 while (p < lineEnd && (*p == ' ' || *p == '\t')) ++p;
                 a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                float y = parseFloat(a, p - a);
+                float y = NewFastHelpers::parseFloat(a, p - a);
                 //fast_float::from_chars(a, p, y);
                 while (p < lineEnd && (*p == ' ' || *p == '\t')) ++p;
                 a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                float z;// = parseFloat(a, p - a);
+                float z = NewFastHelpers::parseFloat(a, p - a);
                 //fast_float::from_chars(a, p, z);
                 normals.emplace_back(x, y, z);
             }
@@ -267,11 +273,11 @@ public:
                 const char* p = lineStart + 2;
                 while (*p == ' ' || *p == '\t') ++p;
                 const char* a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                float u = parseFloat(a, p - a);
+                float u = NewFastHelpers::parseFloat(a, p - a);
                 //fast_float::from_chars(a, p, u);
                 while (p < lineEnd && (*p == ' ' || *p == '\t')) ++p;
                 a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                float v = parseFloat(a, p - a);
+                float v = NewFastHelpers::parseFloat(a, p - a);
                 //fast_float::from_chars(a, p, v);
                 texcoords.emplace_back(u, v);
             }
@@ -279,14 +285,13 @@ public:
             {
                 const char* p = lineStart + 1;
                 while (*p == ' ' || *p == '\t') ++p;
-
-                int firstIndex = -1, prevIndex = -1;
+                faceIndices.clear();
 
                 while (p < lineEnd)
                 {
                     int pIdx = 0, tIdx = 0, nIdx = 0;
                     const char* a = p; while (p < lineEnd && *p != '/' && *p != ' ' && *p != '\t') ++p;
-                    pIdx = parseInt(a, p - a);
+                    pIdx = NewFastHelpers::parseInt(a, p - a);
 
                     if (p < lineEnd && *p == '/')
                     {
@@ -294,23 +299,23 @@ public:
                         if (*p == '/')
                         {
                             ++p; a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                            nIdx = parseInt(a, p - a);
+                            nIdx = NewFastHelpers::parseInt(a, p - a);
                         }
                         else
                         {
                             a = p; while (p < lineEnd && *p != '/' && *p != ' ' && *p != '\t') ++p;
-                            tIdx = parseInt(a, p - a);
+                            tIdx = NewFastHelpers::parseInt(a, p - a);
                             if (p < lineEnd && *p == '/')
                             {
                                 ++p; a = p; while (p < lineEnd && *p != ' ' && *p != '\t') ++p;
-                                nIdx = parseInt(a, p - a);
+                                nIdx = NewFastHelpers::parseInt(a, p - a);
                             }
                         }
                     }
 
-                    pIdx = resolveIndex(pIdx, (int)positions.size());
-                    tIdx = (tIdx != 0) ? resolveIndex(tIdx, (int)texcoords.size()) : -1;
-                    nIdx = (nIdx != 0) ? resolveIndex(nIdx, (int)normals.size()) : -1;
+                    pIdx = NewFastHelpers::resolveIndex(pIdx, (int)positions.size());
+                    tIdx = (tIdx != 0) ? NewFastHelpers::resolveIndex(tIdx, (int)texcoords.size()) : -1;
+                    nIdx = (nIdx != 0) ? NewFastHelpers::resolveIndex(nIdx, (int)normals.size()) : -1;
 
                     if (pIdx < 0) continue; // skip malformed
 
@@ -318,9 +323,9 @@ public:
 
                     if (deduplicateVertices)
                     {
-                        VertexKey key{ pIdx, tIdx, nIdx };
+                        NewFastHelpers::VertexKey key{ pIdx, tIdx, nIdx };
                         bool inserted;
-                        finalIndex = cache.findOrInsert(key, (int)vertices.size(), inserted);
+                        finalIndex = cache.findOrInsert(key, checkedMeshIndex(vertices.size()), inserted);
 
                         if (inserted)
                         {
@@ -329,22 +334,16 @@ public:
                     }
                     else
                     {
-                        finalIndex = (int)vertices.size();
+                        finalIndex = checkedMeshIndex(vertices.size());
                         addVertex(vertices, positions, normals, texcoords, pIdx, nIdx, tIdx);
                     }
 
-                    if (firstIndex < 0) firstIndex = finalIndex;
-                    else if (prevIndex >= 0)
-                    {
-                        indices.push_back(firstIndex);
-                        indices.push_back(prevIndex);
-                        indices.push_back(finalIndex);
-                    }
-
-                    prevIndex = finalIndex;
+                    faceIndices.push_back(finalIndex);
 
                     while (p < lineEnd && (*p == ' ' || *p == '\t')) ++p;
                 }
+
+                appendFaceTriangles(faceIndices, vertices, indices);
             }
         }
 

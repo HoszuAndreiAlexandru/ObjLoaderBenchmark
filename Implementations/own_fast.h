@@ -1,6 +1,7 @@
 #pragma once
 
 #include "loader_template.h"
+#include "../Utils/triangulation.h"
 
 #pragma region Helper functions
 static inline int parseInt(const char* s, size_t n)
@@ -193,7 +194,7 @@ public:
         }
 
         std::vector<Vertex> vertices;
-        std::vector<unsigned int> indices;
+        std::vector<int> indices;
 
         file.seekg(0, std::ios::end);
         size_t size = file.tellg();
@@ -213,6 +214,8 @@ public:
         file.read(&fileData[0], size);
 
         FastVertexCache cache(1 << 20);
+        std::vector<int> faceIndices;
+        faceIndices.reserve(4);
 
         const char* data = fileData.c_str();
         const char* end = data + size;
@@ -271,8 +274,7 @@ public:
             {
                 const char* p = lineStart + 1;
                 while (*p == ' ' || *p == '\t') ++p;
-
-                int firstIndex = -1, prevIndex = -1;
+                faceIndices.clear();
 
                 while (p < lineEnd)
                 {
@@ -312,7 +314,7 @@ public:
                     {
                         VertexKey key{ pIdx, tIdx, nIdx };
                         bool inserted;
-                        finalIndex = cache.findOrInsert(key, (int)vertices.size(), inserted);
+                        finalIndex = cache.findOrInsert(key, checkedMeshIndex(vertices.size()), inserted);
 
                         if (inserted)
                         {
@@ -321,22 +323,16 @@ public:
                     }
                     else
                     {
-                        finalIndex = (int)vertices.size();
+                        finalIndex = checkedMeshIndex(vertices.size());
                         addVertex(vertices, positions, normals, texcoords, pIdx, nIdx, tIdx);
                     }
 
-                    if (firstIndex < 0) firstIndex = finalIndex;
-                    else if (prevIndex >= 0)
-                    {
-                        indices.push_back(firstIndex);
-                        indices.push_back(prevIndex);
-                        indices.push_back(finalIndex);
-                    }
-
-                    prevIndex = finalIndex;
+                    faceIndices.push_back(finalIndex);
 
                     while (p < lineEnd && (*p == ' ' || *p == '\t')) ++p;
                 }
+
+                appendFaceTriangles(faceIndices, vertices, indices);
             }
         }
 

@@ -41,7 +41,7 @@ public:
         }
 
         std::vector<Vertex> vertices;
-        std::vector<unsigned int> indices;
+        std::vector<int> indices;
 
         // Pre-allocate based on total number of indices for speed
         size_t totalIndices = 0;
@@ -88,7 +88,7 @@ public:
                 }
 
                 vertices.push_back(v);
-                indices.push_back((unsigned int)(vertices.size() - 1)); // direct mapping
+                indices.push_back(checkedMeshIndex(vertices.size() - 1)); // direct mapping
             }
         }
 

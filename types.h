@@ -190,12 +190,12 @@ class Mesh
 {
 	public:
 		std::vector<Vertex> vertices;
-		std::vector<unsigned int> indices;
+		std::vector<int> indices;
 
         // Constructors
 		Mesh() {};
 
-		Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
+		Mesh(std::vector<Vertex> vertices, std::vector<int> indices)
 		{
 			this->vertices = vertices;
 			this->indices = indices;
@@ -204,10 +204,24 @@ class Mesh
 		~Mesh() {};
 };
 
+inline int checkedMeshIndex(size_t index)
+{
+    if (index > static_cast<size_t>((std::numeric_limits<int>::max)()))
+        throw std::overflow_error("Mesh exceeds the range of signed int indices");
+
+    return static_cast<int>(index);
+}
+
 struct Result
 {
     Mesh mesh;
     std::chrono::milliseconds elapsed;
+};
+
+struct ObjFileInfo
+{
+    std::string path;
+    size_t vertexCount;
 };
 
 struct Results
