@@ -12,9 +12,20 @@
 #include <unordered_map>
 #include <iomanip>
 #include <algorithm>
+#include <cstdint>
+#include <stdexcept>
 
+#if defined(_WIN32)
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
+#else
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 void writeNewLine(const char* text)
 {
@@ -214,12 +225,24 @@ struct ImplSummary
 };
 
 struct MappedFile {
+#if defined(_WIN32)
     HANDLE file = INVALID_HANDLE_VALUE;
     HANDLE mapping = nullptr;
+#else
+    int file = -1;
+#endif
     const char* data = nullptr;
     size_t size = 0;
+    bool isMapped = false;
+
+    MappedFile() = default;
+    MappedFile(const MappedFile&) = delete;
+    MappedFile& operator=(const MappedFile&) = delete;
 
     bool open(const std::string& path) {
+        close();
+
+#if defined(_WIN32)
         file = CreateFileA(
             path.c_str(),
             GENERIC_READ,
@@ -235,25 +258,102 @@ struct MappedFile {
 
         LARGE_INTEGER fileSize;
         if (!GetFileSizeEx(file, &fileSize))
+        {
+            close();
             return false;
+        }
 
-        size = (size_t)fileSize.QuadPart;
+        if (fileSize.QuadPart < 0 ||
+            static_cast<std::uintmax_t>(fileSize.QuadPart) > (std::numeric_limits<size_t>::max)())
+        {
+            close();
+            return false;
+        }
+
+        size = static_cast<size_t>(fileSize.QuadPart);
+        if (size == 0)
+        {
+            data = emptyBuffer();
+            return true;
+        }
 
         mapping = CreateFileMappingA(file, NULL, PAGE_READONLY, 0, 0, NULL);
         if (!mapping)
+        {
+            close();
             return false;
+        }
 
         data = (const char*)MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, 0);
-        return data != nullptr;
+        if (!data)
+        {
+            close();
+            return false;
+        }
+
+        isMapped = true;
+        return true;
+#else
+        file = ::open(path.c_str(), O_RDONLY);
+        if (file < 0)
+            return false;
+
+        struct stat fileInfo;
+        if (fstat(file, &fileInfo) != 0 || fileInfo.st_size < 0 ||
+            static_cast<std::uintmax_t>(fileInfo.st_size) > (std::numeric_limits<size_t>::max)())
+        {
+            close();
+            return false;
+        }
+
+        size = static_cast<size_t>(fileInfo.st_size);
+        if (size == 0)
+        {
+            data = emptyBuffer();
+            return true;
+        }
+
+        void* view = mmap(nullptr, size, PROT_READ, MAP_PRIVATE, file, 0);
+        if (view == MAP_FAILED)
+        {
+            close();
+            return false;
+        }
+
+        data = static_cast<const char*>(view);
+        isMapped = true;
+        return true;
+#endif
     }
 
     void close() {
-        if (data) UnmapViewOfFile(data);
+#if defined(_WIN32)
+        if (isMapped && data) UnmapViewOfFile(data);
         if (mapping) CloseHandle(mapping);
         if (file != INVALID_HANDLE_VALUE) CloseHandle(file);
+#else
+        if (isMapped && data) munmap(const_cast<char*>(data), size);
+        if (file >= 0) ::close(file);
+#endif
+        data = nullptr;
+        size = 0;
+        isMapped = false;
+#if defined(_WIN32)
+        mapping = nullptr;
+        file = INVALID_HANDLE_VALUE;
+#else
+        file = -1;
+#endif
     }
 
     ~MappedFile() {
         close();
+    }
+
+private:
+    static const char* emptyBuffer()
+    {
+        static const char empty = '\0';
+        return &empty;
     }
 };
