@@ -1,10 +1,17 @@
 #pragma once
 #include "../types.h"
+#include "consoleColors.h"
 
 bool HasObjExtension(const std::string& filename)
 {
     size_t dot = filename.find_last_of('.');
     return dot != std::string::npos && filename.substr(dot) == ".obj";
+}
+
+std::string ObjFileName(const std::string& path)
+{
+    const size_t separator = path.find_last_of("\\/");
+    return separator == std::string::npos ? path : path.substr(separator + 1);
 }
 
 size_t CountVerticesInObj(const std::string& filePath)
@@ -45,9 +52,9 @@ size_t CountVerticesInObj(const std::string& filePath)
     return count;
 }
 
-std::vector<std::string> scanFolderForObjFiles(const std::string& folderPath)
+std::vector<ObjFileInfo> scanFolderForObjFiles(const std::string& folderPath)
 {
-    std::vector<std::string> result;
+    std::vector<ObjFileInfo> result;
 
     std::string searchPath = folderPath + "\\*";
     WIN32_FIND_DATAA findData;
@@ -55,7 +62,9 @@ std::vector<std::string> scanFolderForObjFiles(const std::string& folderPath)
 
     if (handle == INVALID_HANDLE_VALUE)
     {
-        std::cout << "Folder not found: " << folderPath << std::endl;
+        ConsoleColors::write(ConsoleColors::Color::Red, "Folder not found: ");
+        ConsoleColors::write(ConsoleColors::Color::White, folderPath);
+        std::cout << std::endl;
         return result;
     }
 
@@ -73,20 +82,49 @@ std::vector<std::string> scanFolderForObjFiles(const std::string& folderPath)
             continue;
         }
 
-        if (filename.size() > 4 && filename.substr(filename.size() - 4) == ".obj")
-        {
-            result.push_back(folderPath + "\\" + filename);
-        }
-
         std::string fullPath = folderPath + "\\" + filename;
-
         size_t vertexCount = CountVerticesInObj(fullPath);
-
-        std::cout << filename << " -> " << vertexCount << " vertices\n";
+        result.push_back({ fullPath, vertexCount });
 
     } while (FindNextFileA(handle, &findData));
 
     FindClose(handle);
+
+    size_t widestName = 0;
+    size_t widestCount = 1;
+    for (const ObjFileInfo& file : result)
+    {
+        widestName = (std::max)(widestName, ObjFileName(file.path).size());
+        widestCount = (std::max)(widestCount, std::to_string(file.vertexCount).size());
+    }
+
+    const size_t indentationWidth = 6;
+    const size_t suffixWidth = 5 + widestCount + 9; // "  |  " + count + " vertices"
+    const size_t terminalWidth = ConsoleColors::terminalWidth();
+    const size_t availableNameWidth = terminalWidth > indentationWidth + suffixWidth
+        ? terminalWidth - indentationWidth - suffixWidth
+        : 1;
+    const size_t nameWidth = (std::min)(widestName, availableNameWidth);
+
+    for (const ObjFileInfo& file : result)
+    {
+        std::string displayName = ObjFileName(file.path);
+        if (displayName.size() > nameWidth)
+        {
+            if (nameWidth > 3)
+                displayName = displayName.substr(0, nameWidth - 3) + "...";
+            else
+                displayName = displayName.substr(0, nameWidth);
+        }
+
+        std::cout << "      ";
+        ConsoleColors::write(ConsoleColors::Color::Cyan, displayName);
+        if (displayName.size() < nameWidth)
+            std::cout << std::string(nameWidth - displayName.size(), ' ');
+        ConsoleColors::write(ConsoleColors::Color::Gray, "  |  ");
+        ConsoleColors::write(ConsoleColors::Color::Green, file.vertexCount);
+        std::cout << " vertices\n";
+    }
 
     return result;
 }

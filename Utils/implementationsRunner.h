@@ -1,9 +1,10 @@
 #pragma once
 #include "../types.h"
+#include "consoleColors.h"
 
 #include "../Implementations/loader_template.h"
-#include "../Implementations/naive.h"
-//#include "../Implementations/own_fast.h"
+//#include "../Implementations/naive.h"
+#include "../Implementations/own_fast.h"
 #include "../Implementations/tiny_obj_loader.h"
 #include "../Implementations/fast_obj.h"
 #include "../Implementations/new_fast.h"
@@ -25,11 +26,11 @@ struct Registrar
 //static Naive naiveImplementation;
 //static Registrar registerA(&naiveImplementation);
 
-//static OwnFast ownFastImplementation;
-//static Registrar registerB(&ownFastImplementation);
+static OwnFast ownFastImplementation;
+static Registrar registerB(&ownFastImplementation);
 
-//static TinyObjLoader tinyObjLoaderImplementation;
-//static Registrar registerC(&tinyObjLoaderImplementation);
+static TinyObjLoader tinyObjLoaderImplementation;
+static Registrar registerC(&tinyObjLoaderImplementation);
 
 static FastObj fastObjImplementation;
 static Registrar registerD(&fastObjImplementation);
@@ -37,13 +38,16 @@ static Registrar registerD(&fastObjImplementation);
 static NewFast newFastImplementation;
 static Registrar registerE(&newFastImplementation);
 
-std::vector<Results> runImplementations(const std::vector<std::string> paths)
+std::vector<Results> runImplementations(const std::vector<ObjFileInfo>& paths)
 {
 	std::vector<Results> results{};
 
 	for (LoaderTemplate* p : GetRegistry())
 	{
-		std::cout << "\nRunning: " << p->Name() << "\n\n";
+		std::cout << '\n';
+		ConsoleColors::write(ConsoleColors::Color::Magenta, "    Running: ");
+		ConsoleColors::write(ConsoleColors::Color::White, p->Name());
+		std::cout << "\n\n";
 		results.push_back({ p->Name(), p->loadAllObjs(paths) });
 	}
 

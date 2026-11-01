@@ -1,5 +1,6 @@
 #pragma once
 #include "../types.h"
+#include "consoleColors.h"
 
 std::vector<ImplSummary> getSummaries(std::vector<Results> results)
 {
@@ -35,24 +36,38 @@ void sortSummaries(std::vector<ImplSummary> &summaries)
 
 void displaySummaries(std::vector<ImplSummary> summaries)
 {
-    std::cout << "===== Benchmark Summary =====\n\n";
-
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    std::vector<WORD> colors = { 3, 2, 6, 4, 7 };
+    ConsoleColors::section("BENCHMARK SUMMARY", ConsoleColors::Color::Cyan);
 
     for (size_t i = 0; i < summaries.size(); ++i)
     {
-        WORD color = (i < colors.size()) ? colors[i] : 7;
+        if (i > 0)
+            ConsoleColors::divider('-', 88, ConsoleColors::Color::Gray);
 
-        SetConsoleTextAttribute(hConsole, color);
+        const ConsoleColors::Color rankColor = i == 0 ? ConsoleColors::Color::Green
+            : (i == 1 ? ConsoleColors::Color::Cyan
+                : (i == 2 ? ConsoleColors::Color::Yellow : ConsoleColors::Color::White));
 
-        std::cout << i + 1 << ". " << summaries[i].name << "\n";
-        std::cout << "   Total Vertices: " << summaries[i].totalVertices
-            << ", Total Indices: " << summaries[i].totalIndices
-            << ", Total Time: " << summaries[i].totalTime.count() << " ms\n\n";
+        ConsoleColors::write(rankColor, "    " + std::to_string(i + 1) + ". ");
+        ConsoleColors::write(ConsoleColors::Color::White, summaries[i].name);
+        std::cout << '\n' << "      ";
+
+        ConsoleColors::write(ConsoleColors::Color::Cyan, "Vertices");
+        std::cout << ": ";
+        ConsoleColors::write(ConsoleColors::Color::White, summaries[i].totalVertices);
+        std::cout << "    ";
+
+        ConsoleColors::write(ConsoleColors::Color::Cyan, "Indices");
+        std::cout << ": ";
+        ConsoleColors::write(ConsoleColors::Color::White, summaries[i].totalIndices);
+        std::cout << "    ";
+
+        ConsoleColors::write(ConsoleColors::Color::Yellow, "Time");
+        std::cout << ": ";
+        ConsoleColors::write(ConsoleColors::Color::Yellow, summaries[i].totalTime.count());
+        std::cout << " ms\n";
     }
 
-    SetConsoleTextAttribute(hConsole, 7);
+    ConsoleColors::divider('=', 88, ConsoleColors::Color::Cyan);
 }
 
 void showResults(std::vector<Results> results)

@@ -5,23 +5,26 @@ const bool deduplicateVertices = false;
 #include "Utils/objFileScanner.h"
 #include "Utils/implementationsRunner.h"
 #include "Utils/resultsDisplayer.h"
+#include "Utils/consoleColors.h"
 
 const char* objFolderPath = "Objs";
 
 int main()
 {
-    writeNewLine("Welcome to my tiny benchmark.");
-    writeNewLine("Scanning obj files.");
+    ConsoleColors::section("OBJ LOADER BENCHMARK", ConsoleColors::Color::Blue);
+    ConsoleColors::write(ConsoleColors::Color::Cyan, "    Scanning ");
+    ConsoleColors::write(ConsoleColors::Color::White, "OBJ files");
+    std::cout << "\n\n";
 
-    std::vector<std::string> paths = scanFolderForObjFiles(objFolderPath);
+    std::vector<ObjFileInfo> paths = scanFolderForObjFiles(objFolderPath);
 
-    writeNewLine("Running implementations.");
+    ConsoleColors::section("RUNNING IMPLEMENTATIONS", ConsoleColors::Color::Magenta);
 
     std::vector<Results> results = runImplementations(paths);
 
-    writeNewLine("Finished.\n\n");
-
     showResults(results);
+
+    ConsoleColors::section("BENCHMARK COMPLETE", ConsoleColors::Color::Green);
 
     system("pause");
 };
