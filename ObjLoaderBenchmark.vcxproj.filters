@@ -53,10 +53,19 @@
     <ClInclude Include="Utils\implementationsRunner.h">
       <Filter>Source Files\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\meshComparator.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\consoleColors.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
     <ClInclude Include="Utils\objFileScanner.h">
       <Filter>Source Files\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils\resultsDisplayer.h">
+      <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\triangulation.h">
       <Filter>Source Files\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Externals\fast_obj.h">

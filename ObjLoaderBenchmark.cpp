@@ -5,6 +5,7 @@ const bool deduplicateVertices = false;
 #include "Utils/objFileScanner.h"
 #include "Utils/implementationsRunner.h"
 #include "Utils/resultsDisplayer.h"
+#include "Utils/meshComparator.h"
 #include "Utils/consoleColors.h"
 
 const char* objFolderPath = "Objs";
@@ -21,6 +22,8 @@ int main()
     ConsoleColors::section("RUNNING IMPLEMENTATIONS", ConsoleColors::Color::Magenta);
 
     std::vector<Results> results = runImplementations(paths);
+
+    MeshComparator::checkMeshes(results, paths);
 
     showResults(results);
 

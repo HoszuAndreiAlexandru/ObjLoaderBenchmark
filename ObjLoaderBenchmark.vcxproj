@@ -150,8 +150,11 @@
     <ClInclude Include="Implementations\tiny_obj_loader.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="Utils\implementationsRunner.h" />
+    <ClInclude Include="Utils\meshComparator.h" />
+    <ClInclude Include="Utils\consoleColors.h" />
     <ClInclude Include="Utils\objFileScanner.h" />
     <ClInclude Include="Utils\resultsDisplayer.h" />
+    <ClInclude Include="Utils\triangulation.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
