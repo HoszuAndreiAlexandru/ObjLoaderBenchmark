@@ -16,9 +16,13 @@ namespace MeshComparator
 
     struct MeshSignature
     {
+        size_t vertexCount = 0;
         size_t triangleCount = 0;
         size_t trailingIndexCount = 0;
         size_t invalidIndexCount = 0;
+        size_t repeatedIndexDegenerateTriangles = 0;
+        size_t uniqueReferencedVertexCount = 0;
+        size_t unreferencedVertexCount = 0;
         std::vector<TriangleFingerprint> triangles;
     };
 
@@ -129,9 +133,11 @@ namespace MeshComparator
     static MeshSignature buildSignature(const Mesh& mesh)
     {
         MeshSignature signature;
+        signature.vertexCount = mesh.vertices.size();
         signature.triangleCount = mesh.indices.size() / 3;
         signature.trailingIndexCount = mesh.indices.size() % 3;
         signature.triangles.reserve(signature.triangleCount);
+        std::vector<unsigned char> referencedVertices(mesh.vertices.size(), 0);
 
         for (size_t i = 0; i + 2 < mesh.indices.size(); i += 3)
         {
@@ -141,11 +147,29 @@ namespace MeshComparator
             if (ia < 0 || static_cast<size_t>(ia) >= mesh.vertices.size()) ++signature.invalidIndexCount;
             if (ib < 0 || static_cast<size_t>(ib) >= mesh.vertices.size()) ++signature.invalidIndexCount;
             if (ic < 0 || static_cast<size_t>(ic) >= mesh.vertices.size()) ++signature.invalidIndexCount;
+
+            const int triangleIndices[3] = { ia, ib, ic };
+            for (int index : triangleIndices)
+            {
+                if (index < 0 || static_cast<size_t>(index) >= mesh.vertices.size())
+                    continue;
+
+                unsigned char& referenced = referencedVertices[static_cast<size_t>(index)];
+                if (!referenced)
+                {
+                    referenced = 1;
+                    ++signature.uniqueReferencedVertexCount;
+                }
+            }
+
             if (ia < 0 || ib < 0 || ic < 0 ||
                 static_cast<size_t>(ia) >= mesh.vertices.size() ||
                 static_cast<size_t>(ib) >= mesh.vertices.size() ||
                 static_cast<size_t>(ic) >= mesh.vertices.size())
                 continue;
+
+            if (ia == ib || ib == ic || ic == ia)
+                ++signature.repeatedIndexDegenerateTriangles;
 
             signature.triangles.push_back(fingerprintTriangle(
                 mesh.vertices[static_cast<size_t>(ia)],
@@ -153,8 +177,40 @@ namespace MeshComparator
                 mesh.vertices[static_cast<size_t>(ic)]));
         }
 
+        signature.unreferencedVertexCount =
+            signature.vertexCount - signature.uniqueReferencedVertexCount;
         std::sort(signature.triangles.begin(), signature.triangles.end(), triangleFingerprintLess);
         return signature;
+    }
+
+    static void printIndexPrimitiveCheck(
+        const char* implementation,
+        const MeshSignature& reference,
+        const MeshSignature& candidate)
+    {
+        const bool referenceValid =
+            reference.trailingIndexCount == 0 && reference.invalidIndexCount == 0;
+        const bool valid = candidate.trailingIndexCount == 0 && candidate.invalidIndexCount == 0;
+        const bool matches = referenceValid && valid &&
+            candidate.triangleCount == reference.triangleCount &&
+            candidate.repeatedIndexDegenerateTriangles == reference.repeatedIndexDegenerateTriangles;
+
+        const char* status = !referenceValid ? "[PRIMITIVES NOT COMPARED]"
+            : (!valid ? "[PRIMITIVES INVALID]"
+                : (matches ? "[PRIMITIVES MATCH]" : "[PRIMITIVES DIFFER]"));
+        const ConsoleColors::Color statusColor = !referenceValid
+            ? ConsoleColors::Color::Yellow
+            : (matches ? ConsoleColors::Color::Green : ConsoleColors::Color::Red);
+
+        std::cout << "      ";
+        ConsoleColors::write(statusColor, status);
+        std::cout << ' ' << implementation << ": " << candidate.triangleCount
+            << " triangles from " << candidate.triangleCount * 3 << " grouped indices; "
+            << candidate.uniqueReferencedVertexCount << "/" << candidate.vertexCount
+            << " vertices referenced (" << candidate.unreferencedVertexCount << " unused), "
+            << candidate.repeatedIndexDegenerateTriangles << " repeated-index degenerate triangles, "
+            << candidate.invalidIndexCount << " invalid indices, "
+            << candidate.trailingIndexCount << " trailing indices.\n";
     }
 
     static MeshComparison compareSignatures(const MeshSignature& a, const MeshSignature& b)
@@ -404,7 +460,9 @@ namespace MeshComparator
             "    Compares positions, normals, and UVs (tolerance ");
         ConsoleColors::write(ConsoleColors::Color::Yellow, attributeTolerance);
         ConsoleColors::write(ConsoleColors::Color::Gray,
-            "); ignores vertex/index layout and triangle ordering, and preserves winding.\n\n");
+            "); compares triangles independent of vertex/index layout and triangle ordering, preserving winding.\n");
+        ConsoleColors::write(ConsoleColors::Color::Gray,
+            "    Index primitive check groups every 3 indices as a triangle and checks counts, index validity, and repeated-index degenerates.\n\n");
 
         if (results.empty())
         {
@@ -469,6 +527,13 @@ namespace MeshComparator
             std::cout << " (";
             ConsoleColors::write(ConsoleColors::Color::Yellow, reference.triangleCount);
             std::cout << " triangles)\n";
+            std::cout << "      Index primitives: " << reference.triangleCount << " triangles from "
+                << reference.triangleCount * 3 << " grouped indices; "
+                << reference.uniqueReferencedVertexCount << "/" << reference.vertexCount
+                << " vertices referenced (" << reference.unreferencedVertexCount << " unused), "
+                << reference.repeatedIndexDegenerateTriangles << " repeated-index degenerate triangles, "
+                << reference.invalidIndexCount << " invalid indices, "
+                << reference.trailingIndexCount << " trailing indices.\n";
 
             for (size_t implementationIndex = 0; implementationIndex < results.size(); ++implementationIndex)
             {
@@ -485,6 +550,7 @@ namespace MeshComparator
 
                 const Mesh& candidateMesh = results[implementationIndex].data[pathIndex].mesh;
                 const MeshSignature candidate = buildSignature(candidateMesh);
+                printIndexPrimitiveCheck(name, reference, candidate);
                 const bool candidateValid = candidate.trailingIndexCount == 0 && candidate.invalidIndexCount == 0;
                 if (!candidateValid)
                 {
